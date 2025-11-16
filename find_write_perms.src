@@ -1,0 +1,34 @@
+
+// Utility functions to find any folder on a remote shell with write permissions
+
+// walk like an egyption
+walk_dirs = function(file_object)
+
+    for folder in file_object.get_folders()
+        if folder.has_permission("w") then
+            return folder
+        end if
+
+        // Recursively check subfolders
+        subfolder = walk_dirs(folder)
+        if subfolder != null then
+            return subfolder
+        end if
+    end for
+
+end function
+
+// Find any folder on the remote shell's system that has write permissions
+find_write_perms = function(remote_shell)
+
+
+    remote_computer = remote_shell.host_computer
+    root_directory = remote_computer.File("/")
+    folder_w_write_perms = walk_dirs(root_directory)
+    if folder_w_write_perms != null then
+        return folder_w_write_perms
+    else
+        return null
+    end if
+
+end function
