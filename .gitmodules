@@ -1,3 +1,4 @@
 [submodule "chainsaw"]
 	path = chainsaw
 	url = https://github.com/jwfraustro/chainsaw
+	branch = main
