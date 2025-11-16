@@ -1,4 +1,4 @@
-# scion
+# Scion
 **The Self-Escalating R-Shell Installer for GreyHack**
 
 Designed for the [Arborist Suite](https://github.com/jwfraustro/arborist) rshell manager.
