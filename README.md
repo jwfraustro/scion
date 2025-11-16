@@ -67,7 +67,9 @@ scion.graft()
 4. Finally, Scion will start an rshell connection to the provided IP/port.
 
 ## Support Notice
-Scion is provided as-is. I no longer actively maintain Grey Hack related projects or play the game. I cannot guarantee that Scion will work with the current or future versions of Grey Hack.
+Scion is provided as-is. I no longer actively maintain Grey Hack related projects or play the game. I cannot guarantee that Scion will work with future versions of Grey Hack. This project is simply provided as a reference for those interested.
+
+Fun fact: Scion, Rootstock, and Arborist were used to create a network of over 7000 rshell connections in the creation of my (now defunct) GreyHack Network Map project.
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
