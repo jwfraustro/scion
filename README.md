@@ -60,12 +60,6 @@ scion.init(remote_shell) // a pre-existing shell object on the target system
 scion.graft()
 ```
 
-### How it works
-1. Scion checks if the shell it has been provided hs root permissions.
-2. If not, it will attempt to find any writeable directory and use Chainsaw to escalate permissions.
-3. Once root permissions are confirmed, Scion will create a temporary RCE stub to download and install Metasploit on the target system.
-4. Finally, Scion will start an rshell connection to the provided IP/port.
-
 ## Support Notice
 Scion is provided as-is. I no longer actively maintain Grey Hack related projects or play the game. I cannot guarantee that Scion will work with future versions of Grey Hack. This project is simply provided as a reference for those interested.
 
