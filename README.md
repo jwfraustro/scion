@@ -45,7 +45,7 @@ git clone http://github.com/jwfraustro/scion --recurse-submodules
 I really don't suggest downloading or copying the source code manually, as it may lead to headaches when it comes to sorting out dependencies.
 
 ## Usage
-Scion is designed to be controlled by another script and **does not run from the commandline**.
+Scion is designed to be controlled by another script and **does not run from the command line**.
 
 To use Scion, you must import the `scion.src` module into your Grey Hack script. You will need to instantiate a `Scion` object, providing it with an existing shell object to the remote system and an rshell IP address and port for it to "graft" to.
 
