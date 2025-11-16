@@ -1,0 +1,157 @@
+// Scion -- The Self-Escalating RShell Installer
+// by NitroCynic
+
+get_custom_object.in_script = true
+
+import_code("find_write_perms.src")
+import_code("chainsaw/chainsaw.src")
+
+Scion = {}
+Scion.version = "1.0.0"
+Scion.shell = null
+Scion.rshell_ip = null
+Scion.rshell_port = null
+Scion.process_name = null
+
+// Initialize Scion
+Scion.init = function(shell)
+
+    Scion.shell = shell
+    if Scion.shell == null then
+        print("Error: No Scion.shell provided.")
+        return false
+    end if
+
+    elevated = false
+
+    // Check permissions on the shell
+    root_dir = Scion.shell.host_computer.File("/root")
+    if root_dir.has_permission("r") and root_dir.has_permission("w") then
+        print("Scion is running with root permissions.")
+        elevated = true
+    else
+        print("Scion is running with guest permissions.")
+        elevated = false
+    end if
+
+    if not elevated then
+        print("Scion is not running with root permissions. Attempting to escalate...")
+        // Attempt to escalate permissions using ChainSaw
+        if not Scion.escalate() then
+            print("Error: Could not escalate to root permissions.")
+            return false
+        end if
+    end if
+
+end function
+
+Scion.escalate = function() // Escalate Scion to root permissions
+
+    ChainSaw.load()
+
+    if not get_custom_object.hasIndex("chainsaw") then
+        print("ChainSaw not found, run `chainsaw load` first.")
+        return false
+    end if
+
+    rce_str = "
+    chainsaw = get_custom_object.chainsaw
+    chainsaw.init()
+    chainsaw.crack()
+    "
+
+    write_perms = find_write_perms(Scion.shell)
+
+    if not write_perms then
+        print("Error: No write permissions found.")
+        return false
+    end if
+
+    Scion.shell.host_computer.touch(write_perms.path, "rce.src")
+    rce_source = Scion.shell.host_computer.File(write_perms.path + "/rce.src")
+    rce_source.set_content(rce_str)
+    build_result = Scion.shell.build(write_perms.path + "/rce.src", write_perms.path + "/")
+    rce_source.set_content("")
+    print("Running ChainSaw...")
+    Scion.shell.launch(write_perms.path + "/rce")
+
+    elevated_shell = get_custom_object.chainsaw.shell
+    if elevated_shell == null then
+        print("Error: Could not escalate to root permissions.")
+        return false
+    end if
+
+    Scion.shell = elevated_shell
+    print("Scion has been escalated to root permissions.")
+    return true
+
+end function
+
+// Install Metaxploit through RCE
+// You'll want to change the repo IP if the one hard-coded here is no longer valid.
+Scion.install_metax = function()
+
+    rce_str = "
+    print(active_user)
+    apt_client = include_lib(""/lib/aptclient.so"")
+    if not apt_client then
+        print(""Error: APT client not found."")
+        return false
+    end if
+    apt_client.update()
+    apt_client.add_repo(""30.225.197.154"")
+    apt_client.update()
+    result = apt_client.install(""metaxploit.so"")
+    get_custom_object.metax = include_lib(""/lib/metaxploit.so"")
+    print(result)
+    "
+
+    write_perms = "/home/guest"
+
+    Scion.shell.host_computer.touch(write_perms, "rce.src")
+    rce_source = Scion.shell.host_computer.File(write_perms + "/rce.src")
+    rce_source.set_content(rce_str)
+    build_result = Scion.shell.build(write_perms + "/rce.src", write_perms + "/")
+    print(build_result)
+    rce_source.set_content("")
+    print("Running Metaxploit installation...")
+    Scion.shell.launch(write_perms + "/rce")
+
+    if get_custom_object.metax == null then
+        print("Error: Metaxploit installation failed.")
+        return false
+    end if
+
+    return true
+
+end function
+
+Scion.graft = function() // Initiate the reverse shell
+
+    if not Scion.shell then
+        print("Error: No shell available.")
+        return false
+    end if
+
+    if not Scion.rshell_ip or not Scion.rshell_port then
+        print("Error: No reverse shell IP or port specified.")
+        return false
+    end if
+
+    metax = null
+
+    if get_custom_object.hasIndex("metax") then
+        metax = get_custom_object.metax
+    end if
+
+    if not metax then
+        print("Metaxploit library not found.")
+        if Scion.install_metax() then metax = get_custom_object.metax
+    end if
+
+    metax.rshell_client(Scion.rshell_ip, Scion.rshell_port, Scion.process_name)
+    print("Scion has successfully grafted a reverse shell from " + Scion.shell.host_computer.public_ip + " to " + Scion.rshell_ip + ":" + Scion.rshell_port)
+    get_custom_object.metax = null
+    return true
+
+end function
